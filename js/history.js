@@ -16,6 +16,14 @@
   const DAY_NAMES = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
+  function localDateKey(isoStr) {
+    if (!isoStr) return 'Lainnya';
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return 'Lainnya';
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
   function formatDateGroup(dateStr) {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
@@ -271,15 +279,15 @@
           }
         }
 
-        // Filter Tanggal Mulai (start date, YYYY-MM-DD)
+        // Filter Tanggal Mulai (start date, YYYY-MM-DD lokal)
         if (filterStartDate) {
-          const txDate = tx.datetime ? tx.datetime.slice(0, 10) : '';
+          const txDate = localDateKey(tx.datetime);
           if (txDate < filterStartDate) return false;
         }
 
-        // Filter Tanggal Selesai (end date, YYYY-MM-DD)
+        // Filter Tanggal Selesai (end date, YYYY-MM-DD lokal)
         if (filterEndDate) {
-          const txDate = tx.datetime ? tx.datetime.slice(0, 10) : '';
+          const txDate = localDateKey(tx.datetime);
           if (txDate > filterEndDate) return false;
         }
 
@@ -330,10 +338,10 @@
         loadMoreContainer.style.display = 'none';
       }
 
-      // 4. Kelompokkan per tanggal (terbaru di atas)
+      // 4. Kelompokkan per tanggal lokal (terbaru di atas)
       const groups = {}; // 'YYYY-MM-DD' -> [tx]
       toShow.forEach(tx => {
-        const dateKey = tx.datetime ? tx.datetime.slice(0, 10) : 'Lainnya';
+        const dateKey = localDateKey(tx.datetime);
         if (!groups[dateKey]) groups[dateKey] = [];
         groups[dateKey].push(tx);
       });

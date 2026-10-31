@@ -155,8 +155,8 @@
         <button type="button" class="btn btn-accent" id="dash-btn-add-tx">
           + Catat Transaksi
         </button>
-        <button type="button" class="btn btn-ghost" id="dash-btn-scan" disabled title="Segera hadir di Tahap 2">
-          Scan Struk (Segera)
+        <button type="button" class="btn btn-ghost" id="dash-btn-kategori">
+          Kategori
         </button>
       </section>
 
@@ -224,6 +224,7 @@
     // -------------------------------------------------------------------------
     const btnAddTx = container.querySelector('#dash-btn-add-tx');
     const emptyAddBtn = container.querySelector('#dash-empty-add-btn');
+    const btnKategori = container.querySelector('#dash-btn-kategori');
 
     function openAddTransaction() {
       if (typeof App !== 'undefined' && App.openScreen) {
@@ -233,6 +234,9 @@
 
     if (btnAddTx) btnAddTx.addEventListener('click', openAddTransaction);
     if (emptyAddBtn) emptyAddBtn.addEventListener('click', openAddTransaction);
+    if (btnKategori) btnKategori.addEventListener('click', () => {
+      if (typeof App !== 'undefined' && App.openScreen) App.openScreen('kategori');
+    });
 
     // Klik transaksi hari ini untuk membuka mode edit
     const txItems = container.querySelectorAll('.list-row[data-id]');

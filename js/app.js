@@ -103,8 +103,15 @@
       this._wireNav();
       this._placeholders();
       Promise.all(MODULES.map((m) => this._loadModule(m))).then(() => {
-        this.openScreen('beranda', {});
+        const idAwal = (location.hash || '').replace('#', '').trim();
+        const tujuan = idAwal && this._screens.has(idAwal) ? idAwal : 'beranda';
+        this.openScreen(tujuan, {});
+        document.body.setAttribute('data-app-ready', 'true');
         this._registerSW();
+      });
+      window.addEventListener('hashchange', () => {
+        const id = (location.hash || '').replace('#', '').trim();
+        if (id && this._screens.has(id)) this.openScreen(id, {});
       });
     },
   };

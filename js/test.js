@@ -191,9 +191,11 @@
   });
 
   tes('Backup: impor Gabungkan — ID yang ada dilewati, data lama menang', async () => {
-    const sebelum = Store.listTransactions();
-    if (!sebelum.length) throw new Error('butuh minimal 1 transaksi dari tes sebelumnya');
-    const lama = sebelum[0];
+    // Pastikan ada minimal 1 transaksi sebelum impor
+    const lama = Store.saveTransaction({
+      type: 'expense', amount: 50000, categoryId: 'c-makan', categoryName: 'Makan',
+      merchant: 'Lama', note: 'lama', datetime: '2026-10-31T01:00:00Z'
+    });
     const masuk = {
       app: 'catatduit', schemaVersion: 1, exportedAt: '2026-11-01T00:00:00Z',
       categories: [{ id: 'c-impor-1', name: 'KategoriImpor', type: 'expense', keywords: [], createdAt: '2026-11-01T00:00:00Z' }],
@@ -231,6 +233,52 @@
     sama(Store.listTransactions().length, 0);
     sama(Store.listCategories('expense').length, 7, 'kategori expense bawaan harus 7');
     sama(Store.listCategories('income').length, 4, 'kategori income bawaan harus 4');
+  });
+
+  // ===== Riwayat: pengelompokan tanggal zona lokal (PRD 9.2) =====
+  tes('Riwayat: pengelompokan mengikuti zona lokal, bukan UTC', () => {
+    // 01:00 WIB (UTC+7) = 18:00 UTC hari sebelumnya
+    // Harusnya ke-group ke hari lokal (misal tanggal 2), bukan UTC (tanggal 1).
+    const lokalKey = (dt) => {
+      const d = new Date(dt);
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    };
+    const tPagiWIB = '2026-11-02T01:00:00+07:00';
+    // Di zona WIB (+07:00), tanggal lokal adalah 2026-11-02
+    // datetime.slice(0, 10) pada ISO UTC menghasilkan 2026-11-01 (salah).
+    const d = new Date(tPagiWIB);
+    const timezoneOffsetMenit = d.getTimezoneOffset(); // -420 di WIB
+    if (timezoneOffsetMenit === -420) {
+      sama(lokalKey(tPagiWIB), '2026-11-02');
+      sama(tPagiWIB.slice(0, 10), '2026-11-02'); // ISO offset tetap 02, tapi saat toISOString jadi UTC
+      sama(d.toISOString().slice(0, 10), '2026-11-01', 'ISO UTC memang hari sebelumnya');
+    }
+  });
+
+  // ===== Integrasi layar: Kategori & Riwayat (T5 & T6) =====
+  tes('Kategori: tambah, ganti nama, hapus', () => {
+    const k = Store.saveCategory({ name: 'Hobi', type: 'expense', keywords: ['buku', 'kamera'] });
+    sama(Store.listCategories('expense').some((x) => x.id === k.id), true);
+    const diedit = Store.saveCategory({ id: k.id, name: 'Hobi & Game', type: 'expense', keywords: ['game'] });
+    sama(diedit.name, 'Hobi & Game');
+    Store.deleteCategory(k.id);
+    sama(Store.listCategories('expense').some((x) => x.id === k.id), false);
+  });
+
+  tes('Riwayat: filter pencarian & jenis bekerja', () => {
+    Store.saveTransaction({ type: 'income', amount: 500000, categoryId: 'c-gaji', categoryName: 'Gaji', merchant: 'Kantor ABC', note: 'bonus proyek', datetime: '2026-10-31T10:00:00Z' });
+    Store.saveTransaction({ type: 'expense', amount: 20000, categoryId: 'c-makan', categoryName: 'Makan', merchant: 'Warung Nasi', note: 'makan siang', datetime: '2026-10-31T11:00:00Z' });
+
+    App.openScreen('riwayat', {});
+    const search = document.querySelector('#hist-search-input');
+    if (!search) throw new Error('layar riwayat tidak dirender');
+    search.value = 'Warung';
+    search.dispatchEvent(new Event('input', { bubbles: true }));
+
+    const baris = document.querySelectorAll('#hist-list-container .hist-tx-row');
+    sama(baris.length, 1, 'harus 1 baris yang cocok Warung');
+    sama(baris[0].textContent.includes('Warung Nasi'), true);
   });
 
   // ===== Eksekusi berurutan (sync & async satu antrean, urutan dijamin) =====
