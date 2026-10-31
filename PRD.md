@@ -406,7 +406,7 @@ Aplikasi tanpa pelacak, jadi metrik ini diukur lewat uji pemakaian langsung.
 
 1. **PDF dan Excel (DITUTUP):** PDF dibuat lewat halaman pratinjau + `window.print()` + print stylesheet — tanpa library, offline, nol byte tambahan. XLSX memakai SheetJS yang di-vendor di `vendor/xlsx/` dan dimuat lazy saat ekspor; XLSX adalah arsip ZIP, membuatnya tanpa library berarti menulis ZIP writer sendiri.
 2. **Hosting:** Netlify, GitHub Pages, atau Vercel? Kamera dan PWA mewajibkan HTTPS.
-3. **Nama (DITUTUP): CatatDuit** — repo publik `Curzyori/catatduit` (orang lain fork dari sini); nama pendek PWA: "CatatDuit". Ikon masih terbuka.
+3. **Nama & Ikon (DITUTUP): CatatDuit** — repo publik `Curzyori/catatduit` (orang lain fork dari sini); nama pendek PWA: "CatatDuit". Ikon: pixel-art struk + koin "C", diterapkan sebagai ikon resmi PWA (192/512/maskable).
 4. **Kategori bawaan:** daftar awal yang diinginkan (usulan di bawah).
 5. **Tema (DITUTUP):** hanya terang untuk v1, konsisten dengan Non-Tujuan (bagian 3); tema gelap masuk fase "Ke depan".
 
