@@ -1,0 +1,243 @@
+/* CatatDuit — Semi Pixel-Art (Light). Sumber kebenaran: DESIGN.md.
+   Radius 0 di semua elemen. Frame 2px. Hard shadow tanpa blur. */
+
+/* ===== Token (DESIGN.md) ===== */
+:root {
+  --ink: #072033;
+  --ink-muted: #3B5A70;
+  --background: #F7FAFC;
+  --surface: #FFFFFF;
+  --surface-alt: #F0F7FB;
+  --stroke: #D9E5ED;
+  --accent: #0369A1;
+  --accent-hover: #075985;
+  --on-accent: #FFFFFF;
+  --accent-muted: rgba(3, 105, 161, 0.12);
+  --success: #0F766E;
+  --warning: #9A3412;
+  --danger: #BE123C;
+  --line-strong: #163A55;
+  --line-soft: #CFE2EE;
+  --paper: #FFFDF7;
+  --paper-shade: #F3EBDD;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --sp-xs: 4px; --sp-sm: 8px; --sp-md: 16px; --sp-lg: 24px; --sp-xl: 40px; --sp-xxl: 64px;
+  --shadow-drop: 6px 6px 0 0 var(--line-soft);
+  --shadow-drop-hover: 8px 8px 0 0 var(--accent);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 300ms;
+  --nav-h: 64px;
+}
+
+/* ===== Font (self-hosted, nol CDN) ===== */
+@font-face { font-family: 'Space Grotesk'; src: url('../public/fonts/space-grotesk-v22-latin_latin-ext-regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Space Grotesk'; src: url('../public/fonts/space-grotesk-v22-latin_latin-ext-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Space Grotesk'; src: url('../public/fonts/space-grotesk-v22-latin_latin-ext-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('../public/fonts/inter-v20-latin_latin-ext-regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('../public/fonts/inter-v20-latin_latin-ext-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('../public/fonts/inter-v20-latin_latin-ext-600.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('../public/fonts/inter-v20-latin_latin-ext-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'JetBrains Mono'; src: url('../public/fonts/jetbrains-mono-v24-latin_latin-ext-regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'JetBrains Mono'; src: url('../public/fonts/jetbrains-mono-v24-latin_latin-ext-500.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'JetBrains Mono'; src: url('../public/fonts/jetbrains-mono-v24-latin_latin-ext-700.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Material Symbols Rounded'; src: url('../public/fonts/material-symbols-rounded-v374-latin-regular.woff2') format('woff2'); font-weight: 400; font-display: block; }
+
+/* ===== Dasar ===== */
+* { box-sizing: border-box; border-radius: 0 !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; letter-spacing: -0.03em; margin: 0 0 var(--sp-md); }
+h1 { font-size: 2rem; font-weight: 700; }
+h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; }
+
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.msr {
+  font-family: 'Material Symbols Rounded';
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+.mono, .amount { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.amount-plus { color: var(--success); }
+.amount-minus { color: var(--danger); }
+
+/* ===== Layout ===== */
+#screens { max-width: 480px; margin: 0 auto; padding: var(--sp-lg) var(--sp-md) calc(var(--nav-h) + var(--sp-lg) + env(safe-area-inset-bottom)); }
+
+.screen { display: none; }
+.screen.is-active { display: block; }
+
+.screen-title { display: flex; align-items: center; gap: var(--sp-sm); margin-bottom: var(--sp-lg); }
+.screen-title .msr { font-size: 28px; color: var(--accent); }
+
+/* ===== Bilah bawah ===== */
+.bottom-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: flex; align-items: stretch; justify-content: center; gap: var(--sp-xs);
+  max-width: 480px; margin: 0 auto;
+  background: var(--surface);
+  border-top: 2px solid var(--stroke);
+  padding: var(--sp-xs) var(--sp-sm) calc(var(--sp-xs) + env(safe-area-inset-bottom));
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+}
+
+.nav-item {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 56px; min-height: 48px; padding: var(--sp-xs) var(--sp-sm);
+  color: var(--ink-muted); font-family: var(--font-body); font-size: 0.6875rem; font-weight: 500;
+}
+.nav-item .msr { font-size: 24px; }
+.nav-item[aria-current="page"] { color: var(--accent); box-shadow: inset 0 -2px 0 0 var(--line-strong); }
+
+.nav-center {
+  appearance: none; cursor: pointer;
+  align-self: center;
+  width: 56px; height: 56px; flex: 0 0 56px;
+  margin: 0 var(--sp-sm);
+  background: var(--accent); color: var(--on-accent);
+  border: 2px solid var(--line-strong);
+  box-shadow: var(--shadow-drop);
+  font-size: 28px;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.nav-center:active { transform: translate(-2px, -2px); box-shadow: var(--shadow-drop-hover); }
+
+/* ===== Tombol ===== */
+.btn {
+  appearance: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-sm);
+  min-height: 48px; padding: var(--sp-sm) var(--sp-md);
+  font-family: var(--font-body); font-size: 1rem; font-weight: 600;
+  border: 2px solid var(--line-strong);
+  box-shadow: var(--shadow-drop);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.btn:active { transform: translate(-2px, -2px); box-shadow: var(--shadow-drop-hover); }
+.btn-primary { background: var(--ink); color: var(--on-accent); }
+.btn-accent { background: var(--accent); color: var(--on-accent); }
+.btn-danger { background: var(--danger); color: var(--on-accent); }
+.btn-ghost { background: transparent; color: var(--accent); border-color: var(--accent); box-shadow: none; }
+.btn-ghost:active { transform: none; box-shadow: none; }
+.btn-block { width: 100%; }
+
+/* ===== Kartu ===== */
+.card {
+  background: var(--surface);
+  border: 2px solid var(--stroke);
+  box-shadow: var(--shadow-drop);
+  padding: var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+
+/* Kartu struk: latar kertas + tepi bergerigi 8px (khas CatatDuit) */
+.card-receipt {
+  position: relative;
+  background: var(--paper);
+  border: 2px solid var(--line-strong);
+  box-shadow: var(--shadow-drop);
+  padding: var(--sp-lg) var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+.card-receipt::before, .card-receipt::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 8px;
+  background-image: linear-gradient(135deg, var(--paper-shade) 25%, transparent 25%),
+                    linear-gradient(-135deg, var(--paper-shade) 25%, transparent 25%);
+  background-size: 16px 8px;
+  background-repeat: repeat-x;
+}
+.card-receipt::before { top: -2px; }
+.card-receipt::after { bottom: -2px; transform: scaleY(-1); }
+
+/* ===== Daftar & baris transaksi ===== */
+.list { border: 2px solid var(--stroke); background: var(--surface); box-shadow: var(--shadow-drop); margin-bottom: var(--sp-lg); }
+.list-row {
+  display: flex; align-items: center; gap: var(--sp-sm);
+  min-height: 48px; padding: var(--sp-sm) var(--sp-md);
+  border-bottom: 2px dashed var(--line-soft);
+  width: 100%; text-align: left; background: transparent; border-left: 0; border-right: 0; border-top: 0;
+  font-family: var(--font-body); font-size: 1rem; color: var(--ink);
+}
+.list-row:last-child { border-bottom: 0; }
+.list-row .grow { flex: 1; min-width: 0; }
+.list-row .title { font-weight: 600; }
+.list-row .sub { font-size: 0.875rem; color: var(--ink-muted); }
+.list-row .amount { font-weight: 500; white-space: nowrap; }
+
+/* ===== Chip ===== */
+.chip {
+  display: inline-flex; align-items: center;
+  min-height: 32px; padding: 2px var(--sp-sm);
+  background: var(--surface-alt); border: 2px solid var(--stroke);
+  color: var(--accent); font-size: 0.875rem; font-weight: 500;
+}
+.chip-active { background: var(--accent-muted); border-color: var(--accent); }
+
+/* ===== Form ===== */
+.field { margin-bottom: var(--sp-md); }
+.field label { display: block; font-weight: 600; margin-bottom: var(--sp-xs); }
+.input, select.input, textarea.input {
+  width: 100%; min-height: 48px; padding: var(--sp-sm) var(--sp-md);
+  background: var(--surface); border: 2px solid var(--stroke); color: var(--ink);
+  font-family: var(--font-body); font-size: 1rem;
+}
+.input:focus { border-color: var(--line-strong); outline: 2px solid var(--accent); outline-offset: 2px; }
+.input-error { border-color: var(--danger); }
+.field-error { color: var(--warning); font-size: 0.875rem; font-weight: 500; margin-top: var(--sp-xs); }
+
+/* ===== Grafik ===== */
+.chart { width: 100%; height: 160px; display: block; background: var(--surface-alt); border: 2px solid var(--stroke); }
+
+/* ===== Kosong / dialog / toast ===== */
+.empty {
+  border: 2px dashed var(--stroke); padding: var(--sp-xl) var(--sp-md);
+  text-align: center; color: var(--ink-muted); margin-bottom: var(--sp-lg);
+}
+
+.dialog-backdrop { position: fixed; inset: 0; z-index: 20; background: rgba(7, 32, 51, 0.5); display: flex; align-items: center; justify-content: center; padding: var(--sp-md); }
+.dialog { background: var(--surface); border: 2px solid var(--line-strong); box-shadow: var(--shadow-drop); padding: var(--sp-lg); max-width: 400px; width: 100%; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--nav-h) + var(--sp-md) + env(safe-area-inset-bottom));
+  z-index: 30;
+  background: var(--ink); color: var(--on-accent);
+  border: 2px solid var(--line-strong); box-shadow: var(--shadow-drop);
+  padding: var(--sp-sm) var(--sp-md); font-size: 0.9375rem;
+}
+
+/* ===== Jam ===== */
+.clock { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-muted); font-size: 0.9375rem; }
+
+/* ===== Gerak ===== */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
