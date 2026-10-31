@@ -1,0 +1,67 @@
+# ===========================================
+# 1. Environment & Secrets (CRITICAL)
+# ===========================================
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.pfx
+*.pkcs12
+*.cer
+*.crt
+id_rsa
+id_ed25519
+*credentials*
+*secret*
+*.keystore
+
+# ===========================================
+# 2. OS & Editor Artifacts
+# ===========================================
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+.idea/
+*.suo
+*.swp
+*.swo
+*~
+
+# ===========================================
+# 3. Logs & Runtime Dumps
+# ===========================================
+*.log
+*.pid
+*.seed
+*.pid.lock
+*.crash
+core
+
+# ===========================================
+# 4. Agent & Tooling Caches
+# ===========================================
+.hermes/
+.claude/
+.graphify/
+.codex/
+.opencode/
+.cursor/
+graphify-out/
+
+# ===========================================
+# 5. Frontend Build Outputs
+# ===========================================
+node_modules/
+dist/
+build/
+coverage/
+.cache/
+
+# Catatan: vendor/ TIDAK di-ignore — berisi Tesseract & SheetJS
+# yang memang di-commit agar aplikasi jalan offline penuh.
