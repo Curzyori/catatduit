@@ -40,7 +40,7 @@ typography:
   h3:
     fontFamily: Space Grotesk
     fontSize: 1.25rem
-    fontWeight: 600
+    fontWeight: 700
     lineHeight: 1.3
     letterSpacing: "-0.01em"
   body:
