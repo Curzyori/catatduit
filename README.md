@@ -47,3 +47,5 @@ Alurnya: fork → branch baru per task (`t<N>-<nama>`) → commit konvensional �
 | [DESIGN.md](DESIGN.md) | Design system Semi Pixel-Art (light) |
 | [TASK.md](TASK.md) | Pembagian tugas MVP + peta kepemilikan berkas |
 | [AGENTS.md](AGENTS.md) | Aturan kerja untuk kontributor & AI agent |
+
+Lisensi: [MIT](LICENSE).
