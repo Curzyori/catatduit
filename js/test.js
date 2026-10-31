@@ -6,14 +6,10 @@
   const hasil = [];
   let gagal = 0;
 
+  const antrean = [];
+
   function tes(nama, fn) {
-    try {
-      fn();
-      hasil.push(['ok', nama]);
-    } catch (err) {
-      gagal += 1;
-      hasil.push(['fail', nama + ' :: ' + (err && err.message ? err.message : err)]);
-    }
+    antrean.push({ nama, fn });
   }
 
   function sama(a, b, pesan) {
@@ -111,10 +107,6 @@
     sama(setelah.categoryName, 'Kost', 'snapshot nama harus bertahan');
   });
 
-  tes('hapus transaksi berfoto: blob receipt ikut terhapus (IndexedDB)', () => {
-    return; // versi async dites terpisah di bawah
-  });
-
   tes('schemaVersion tersimpan', () => {
     const raw = JSON.parse(localStorage.getItem('catatduit:data') || '{}');
     sama(raw.schemaVersion, 1);
@@ -125,8 +117,8 @@
     sama(Store.getSettings().backupTerakhir, '2026-10-31T00:00:00Z');
   });
 
-  // Hapus blob IndexedDB (async) — dijalankan terpisah, hasil digabung ke ringkasan.
-  const tesAsyncBlob = async () => {
+  // Hapus transaksi berfoto: blob receipt ikut terhapus (IndexedDB, async)
+  tes('hapus transaksi berfoto: blob receipt ikut terhapus (IndexedDB)', async () => {
     const blob = new Blob(['x'], { type: 'image/png' });
     const kat = Store.listCategories('expense')[0];
     const tx = Store.saveTransaction({ type: 'expense', amount: 9000, categoryId: kat.id, categoryName: kat.name, datetime: '2026-10-31T05:00:00', receipt: blob });
@@ -136,7 +128,7 @@
     Store.deleteTransaction(tx.id);
     const sisa = await Store.getReceipt(tx.receiptId);
     if (sisa) throw new Error('blob receipt tidak ikut terhapus');
-  };
+  });
 
   // ===== Integrasi layar (E2E ringan): form T3 + Beranda T4 lewat UI beneran =====
   function tesAlurForm() {
@@ -164,7 +156,84 @@
 
   tes('alur form: isi -> simpan -> Beranda terupdate (E2E)', tesAlurForm);
 
-  // ===== Render =====
+  // ===== Backup & restore (T7) =====
+  tes('Backup: API kontrak ada', () => {
+    for (const fn of ['buildExport', 'parseImport']) {
+      if (typeof Backup[fn] !== 'function') throw new Error('Backup.' + fn + ' bukan fungsi');
+    }
+  });
+
+  tes('Backup: buildExport sesuai format PRD 9.3', () => {
+    const data = Backup.buildExport({ includeReceipts: false });
+    sama(data.app, 'catatduit');
+    sama(data.schemaVersion, 1);
+    sama(data.includesReceipts, false);
+    if (!Array.isArray(data.categories) || !Array.isArray(data.transactions) || !Array.isArray(data.merchantRules)) {
+      throw new Error('koleksi tidak berupa array');
+    }
+    if (typeof data.settings !== 'object') throw new Error('settings hilang');
+    if (!data.exportedAt) throw new Error('exportedAt hilang');
+    if ('receipts' in data) throw new Error('tanpa foto tidak boleh bawa receipts');
+  });
+
+  tes('Backup: parseImport menolak file bukan catatduit', () => {
+    let ditolak = false;
+    try { Backup.parseImport({ app: 'aplikasi-lain', schemaVersion: 1 }); }
+    catch (e) { ditolak = true; }
+    sama(ditolak, true);
+  });
+
+  tes('Backup: parseImport menolak versi lebih baru', () => {
+    let pesan = '';
+    try { Backup.parseImport({ app: 'catatduit', schemaVersion: 99, categories: [], transactions: [], merchantRules: [], settings: {} }); }
+    catch (e) { pesan = e.message; }
+    if (!pesan.includes('perbarui aplikasi')) throw new Error('pesan harus menyuruh perbarui aplikasi, dapat: ' + pesan);
+  });
+
+  tes('Backup: impor Gabungkan — ID yang ada dilewati, data lama menang', async () => {
+    const sebelum = Store.listTransactions();
+    if (!sebelum.length) throw new Error('butuh minimal 1 transaksi dari tes sebelumnya');
+    const lama = sebelum[0];
+    const masuk = {
+      app: 'catatduit', schemaVersion: 1, exportedAt: '2026-11-01T00:00:00Z',
+      categories: [{ id: 'c-impor-1', name: 'KategoriImpor', type: 'expense', keywords: [], createdAt: '2026-11-01T00:00:00Z' }],
+      transactions: [
+        { ...lama, amount: lama.amount + 777 },                 // ID sama, isi beda -> harus dilewati
+        { id: 'tx-impor-baru', type: 'income', amount: 1000, categoryId: 'x', categoryName: 'X', datetime: '2026-11-01T00:00:00Z' }
+      ],
+      merchantRules: [], settings: {}
+    };
+    const hasil = Backup.parseImport(masuk);
+    const ringkas = await Backup.terapkanImport(hasil, 'gabung');
+    sama(ringkas.transaksiBaru, 1);
+    const sesudah = Store.listTransactions();
+    sama(sesudah.find((t) => t.id === lama.id).amount, lama.amount, 'data lama harus menang');
+    if (!sesudah.find((t) => t.id === 'tx-impor-baru')) throw new Error('transaksi baru tidak masuk');
+    if (!Store.listCategories('expense').some((k) => k.id === 'c-impor-1')) throw new Error('kategori impor tidak masuk');
+  });
+
+  tes('Backup: impor Timpa — seluruh data diganti', async () => {
+    const masuk = {
+      app: 'catatduit', schemaVersion: 1, exportedAt: '2026-11-01T00:00:00Z',
+      categories: [{ id: 'c-timpa-1', name: 'SatuSatu', type: 'expense', keywords: [], createdAt: '2026-11-01T00:00:00Z' }],
+      transactions: [{ id: 'tx-timpa-1', type: 'expense', amount: 500, categoryId: 'c-timpa-1', categoryName: 'SatuSatu', datetime: '2026-11-01T00:00:00Z' }],
+      merchantRules: [], settings: {}
+    };
+    await Backup.terapkanImport(Backup.parseImport(masuk), 'timpa');
+    const tx = Store.listTransactions();
+    sama(tx.length, 1);
+    sama(tx[0].id, 'tx-timpa-1');
+    sama(Store.listCategories('expense').length, 1);
+  });
+
+  tes('Store.resetAll: kembali ke kondisi awal dengan kategori bawaan', () => {
+    Store.resetAll();
+    sama(Store.listTransactions().length, 0);
+    sama(Store.listCategories('expense').length, 7, 'kategori expense bawaan harus 7');
+    sama(Store.listCategories('income').length, 4, 'kategori income bawaan harus 4');
+  });
+
+  // ===== Eksekusi berurutan (sync & async satu antrean, urutan dijamin) =====
   function render() {
     const ul = document.getElementById('hasil');
     ul.innerHTML = '';
@@ -174,7 +243,7 @@
       li.textContent = (status === 'ok' ? 'PASS  ' : 'FAIL  ') + teks;
       ul.appendChild(li);
     }
-    const total = hasil.length;
+    const total = antrean.length;
     document.getElementById('ringkasan').innerHTML =
       '<p><strong>' + (total - gagal) + '/' + total + '</strong> tes lulus' + (gagal ? ' - ' + gagal + ' GAGAL' : ' - SEMUA HIJAU') + '</p>';
     document.title = (gagal ? 'FAIL ' : 'PASS ') + 'CatatDuit — Tes';
@@ -182,16 +251,21 @@
     window.__TEST_FAILED__ = gagal;
   }
 
-  function sinkron() {
-    render();
-    if (typeof Store !== 'undefined' && typeof Store.whenReady === 'function') {
-      Store.whenReady()
-        .then(tesAsyncBlob)
-        .then(() => { hasil.push(['ok', 'hapus transaksi berfoto: blob receipt ikut terhapus (IndexedDB)']); })
-        .catch((err) => { gagal += 1; hasil.push(['fail', 'hapus transaksi berfoto :: ' + err.message]); })
-        .finally(render);
+  async function jalankan() {
+    // Suite selalu mulai dari kondisi bersih — localStorage browser asli persisten
+    // antar-run, jadi tanpa reset hasilnya bergantung pada run sebelumnya.
+    if (typeof Store !== 'undefined' && typeof Store.resetAll === 'function') Store.resetAll();
+    for (const { nama, fn } of antrean) {
+      try {
+        await fn();
+        hasil.push(['ok', nama]);
+      } catch (err) {
+        gagal += 1;
+        hasil.push(['fail', nama + ' :: ' + (err && err.message ? err.message : err)]);
+      }
+      render();
     }
   }
 
-  sinkron();
+  jalankan();
 })();

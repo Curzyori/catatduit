@@ -82,15 +82,8 @@ const Store = (function () {
     }));
   }
 
-  function muat() {
-    try {
-      const raw = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (raw && raw.schemaVersion === SCHEMA_VERSION) {
-        data = raw;
-        return;
-      }
-    } catch (e) { /* korup = mulai baru, data lama tidak dipakai */ }
-    data = {
+  function buatDataBaru() {
+    return {
       schemaVersion: SCHEMA_VERSION,
       categories: DEFAULT_CATEGORIES.map((k) => ({
         id: 'c-' + k.type + '-' + k.name.toLowerCase(),
@@ -100,6 +93,23 @@ const Store = (function () {
       merchantRules: [],
       settings: {},
     };
+  }
+
+  function muat() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (raw && raw.schemaVersion === SCHEMA_VERSION) {
+        data = raw;
+        return;
+      }
+    } catch (e) { /* korup = mulai baru, data lama tidak dipakai */ }
+    data = buatDataBaru();
+    persist();
+  }
+
+  /* Hapus seluruh data & kembali ke kondisi pertama dipasang (kategori bawaan ada). */
+  function resetAll() {
+    data = buatDataBaru();
     persist();
   }
 
@@ -211,7 +221,10 @@ const Store = (function () {
       persist();
       return { ...lama };
     }
-    const baru = { id: uid(), name, type, keywords: Array.isArray(kat.keywords) ? kat.keywords.slice() : [], createdAt: sekarang() };
+    // ID dari backup/impor wajib dipertahankan supaya transaksi yang
+    // merujuk kategori itu tidak kehilangan tautannya.
+    const id = kat.id || uid();
+    const baru = { id, name, type, keywords: Array.isArray(kat.keywords) ? kat.keywords.slice() : [], createdAt: sekarang() };
     data.categories.push(baru);
     persist();
     return { ...baru };
@@ -249,6 +262,6 @@ const Store = (function () {
   return {
     listTransactions, saveTransaction, deleteTransaction,
     listCategories, saveCategory, deleteCategory,
-    getSettings, saveSettings, getReceipt, whenReady,
+    getSettings, saveSettings, getReceipt, whenReady, resetAll,
   };
 })();
