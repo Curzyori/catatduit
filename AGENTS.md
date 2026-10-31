@@ -34,6 +34,8 @@ Baca urut sebelum melakukan apa pun:
 5. Reviewer: **Yuken**. JANGAN merge PR sendiri. JANGAN pernah push langsung ke `main`. JANGAN force-push.
 6. Dapat catatan review? Perbaiki di branch yang sama, push ulang, PR otomatis ter-update.
 
+> **Kebijakan merge:** PR yang lolos review di-**merge langsung** (commit kontributor tetap tercatat sebagai contributor). Perbaikan kecil pasca-review = **commit lanjutan di branch PR yang sama**, bukan menulis ulang berkasnya di repo utama — jangan buang kredit commit kontributor.
+
 ## Aturan Tambahan
 
 - Kalau perubahanmu mengubah perilaku yang tertulis di `PRD.md`, perbarui bagian itu di PR yang sama (commit `docs:`).
