@@ -19,10 +19,11 @@ Pencatat keuangan pribadi berbentuk PWA: jalan penuh di browser, bisa dipasang k
 
 Detail kebutuhan ada di [PRD.md](PRD.md).
 
-## Jalankan lokal
+## Jalankan & Pasang
 
-Aplikasi ini statis tanpa build step. Setelah kode tersedia, cukup:
+Aplikasi ini sudah **LIVE**: **[catatduit-dm85.vercel.app](https://catatduit-dm85.vercel.app/)** — buka di browser HP kamu lalu pilih **"Tambahkan ke Layar Utama" (Install PWA)**.
 
+Untuk menjalankan lokal:
 ```bash
 git clone https://github.com/Curzyori/catatduit.git
 cd catatduit
