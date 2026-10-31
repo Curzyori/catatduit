@@ -28,6 +28,7 @@ const Store = (function () {
   let data = null;
   let dbPromise = null;
   let lastIso = '';
+  let storageOk = true; // false = browser menolak penyimpanan (mode privat/sandbox) → mode memori
   const pendingWrites = new Map(); // receiptId -> Promise tulis blob
 
   function uid() {
@@ -103,7 +104,16 @@ const Store = (function () {
   }
 
   function persist() {
-    localStorage.setItem(KEY, JSON.stringify(data));
+    try {
+      localStorage.setItem(KEY, JSON.stringify(data));
+      storageOk = true;
+    } catch (e) {
+      // Mode privat / penyimpanan diblokir: aplikasi tetap jalan (data sesi saja).
+      if (storageOk) {
+        storageOk = false;
+        console.error('Penyimpanan browser tidak tersedia — data hanya hidup selama sesi ini. Backup rutin tetap disarankan.');
+      }
+    }
   }
 
   function kategoriBerdasarkanId(id) {
