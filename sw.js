@@ -1,5 +1,5 @@
 /* CatatDuit service worker — cache-first app shell. Versi naik = CACHE berubah. */
-const CACHE = 'catatduit-v1';
+const CACHE = 'catatduit-v2';
 const ASSETS = [
   './',
   './index.html',
