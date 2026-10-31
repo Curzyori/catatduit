@@ -216,6 +216,37 @@ a { color: var(--accent); }
 /* ===== Grafik ===== */
 .chart { width: 100%; height: 160px; display: block; background: var(--surface-alt); border: 2px solid var(--stroke); }
 
+/* ===== Segmenter jenis transaksi (T3) ===== */
+.segmented-control {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border: 2px solid var(--line-strong); background: var(--surface-alt);
+}
+.segmented-btn {
+  min-height: 44px; background: transparent; border: 0; cursor: pointer;
+  font-family: var(--font-body); font-size: 0.9375rem; font-weight: 600;
+  color: var(--ink-muted); text-align: center;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.segmented-btn.active.type-expense { background: var(--danger); color: var(--on-accent); }
+.segmented-btn.active.type-income { background: var(--success); color: var(--on-accent); }
+
+.form-label .required { color: var(--danger); }
+
+/* Pratinjau jumlah saat mengetik (T3) */
+.amount-preview { margin-top: var(--sp-xs); font-size: 1.125rem; font-weight: 700; color: var(--accent); }
+
+/* ===== Kartu struk: header & rekap (T4) ===== */
+.receipt-header { border-bottom: 2px dashed var(--line-soft); padding-bottom: var(--sp-sm); margin-bottom: var(--sp-sm); text-align: center; }
+.receipt-title { font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted); }
+.receipt-balance { font-family: var(--font-display); font-size: 2rem; font-weight: 700; margin: var(--sp-xs) 0; }
+.recap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-sm); margin-top: var(--sp-sm); }
+.recap-box { background: var(--surface); border: 2px solid var(--stroke); padding: var(--sp-sm); }
+.recap-box-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--ink-muted); margin-bottom: var(--sp-xs); }
+.recap-item { display: flex; justify-content: space-between; font-size: 0.8125rem; margin-top: 2px; }
+
+/* Tombol aksi cepat Beranda (T4) */
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-sm); margin-bottom: var(--sp-lg); }
+
 /* ===== Kosong / dialog / toast ===== */
 .empty {
   border: 2px dashed var(--stroke); padding: var(--sp-xl) var(--sp-md);
