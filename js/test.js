@@ -138,6 +138,32 @@
     if (sisa) throw new Error('blob receipt tidak ikut terhapus');
   };
 
+  // ===== Integrasi layar (E2E ringan): form T3 + Beranda T4 lewat UI beneran =====
+  function tesAlurForm() {
+    // Mulai dari kondisi bersih untuk alur ini
+    for (const id of Store.listTransactions().map((t) => t.id)) Store.deleteTransaction(id);
+    App.openScreen('transaksi', {});
+
+    const input = document.querySelector('#tx-amount');
+    if (!input) throw new Error('form transaksi tidak dirender');
+    input.value = '25000';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    sama(document.querySelector('#tx-amount-preview').textContent.replace(/\u00a0/g, ' '), 'Rp 25.000', 'pratinjau live');
+
+    document.querySelector('#tx-btn-type-income').click();
+    const cat = document.querySelector('#tx-category');
+    if (cat.options.length < 2) throw new Error('kategori income tidak termuat');
+    cat.selectedIndex = 1;
+
+    document.querySelector('#tx-btn-submit').click();
+    if (!document.querySelector('#layar-beranda.is-active')) throw new Error('tidak kembali ke Beranda setelah simpan');
+    const saldo = document.getElementById('dash-total-balance');
+    sama(saldo.textContent.replace(/\u00a0/g, ' ').trim(), 'Rp 25.000', 'saldo Beranda setelah simpan');
+    if (!document.querySelector('#dash-today-tx-list .list-row')) throw new Error('transaksi baru tidak muncul di daftar hari ini');
+  }
+
+  tes('alur form: isi -> simpan -> Beranda terupdate (E2E)', tesAlurForm);
+
   // ===== Render =====
   function render() {
     const ul = document.getElementById('hasil');
